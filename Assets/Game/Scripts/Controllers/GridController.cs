@@ -1,3 +1,4 @@
+using Game.Scripts.Behaviours;
 using Game.Scripts.Helpers;
 using UnityEngine;
 
@@ -7,11 +8,11 @@ namespace Game.Scripts.Controllers
     {
         [Header("Grid Options")]
         [Tooltip("Grid Size to be generated (n x n)")]
-        public int GridSize = 5;
-        public GameObject CellPrefab;
-        public float GridPadding = 0.1f;
-        
-        private GameObject [,] _cells;
+        [SerializeField] private int gridSize = 5;
+        [SerializeField] private CellBehaviour cellPrefab;
+        [SerializeField] private float gridPadding = 0.1f;
+        [SerializeField] private Transform gridParent;
+        private CellBehaviour [,] _cells;
         private Camera _mainCam;
 
         private void Start()
@@ -32,7 +33,13 @@ namespace Game.Scripts.Controllers
 
         public void Dispose()
         {
-            //todo: clear cells
+            // Clear cells
+
+            foreach (var cell in _cells)
+            {
+                cell.Dispose();
+            }
+            
         }
 
         private void GenerateGrid()
@@ -41,24 +48,31 @@ namespace Game.Scripts.Controllers
             var screenWidth = screenHeight * _mainCam.aspect;
             
             // Cell size is determined by the smallest part of the screen
-            float cellSize = Mathf.Min(screenWidth, screenHeight) / GridSize;
+            float cellSize = Mathf.Min(screenWidth, screenHeight) / gridSize;
         
-            _cells = new GameObject [GridSize, GridSize];
+            _cells = new CellBehaviour [gridSize, gridSize];
             
             // Start at the top left of the screen
             Vector2 startPos = new Vector2(-screenWidth / 2 + cellSize / 2, screenHeight / 2 - cellSize / 2);
 
-            for (int row = 0; row < GridSize; row++)
+            for (int row = 0; row < gridSize; row++)
             {
-                for (int col = 0; col < GridSize; col++)
+                for (int col = 0; col < gridSize; col++)
                 {
                     Vector2 position = new Vector2(startPos.x + col * cellSize, startPos.y - row * cellSize);
-                    GameObject cellObj = Instantiate(CellPrefab, position, Quaternion.identity, transform);
-                    cellObj.transform.localScale = Vector3.one * (cellSize - GridPadding);
+                    var cell = Instantiate(cellPrefab, position, Quaternion.identity, gridParent);
+                    cell.transform.localScale = Vector3.one * (cellSize - gridPadding);
 
-                    _cells[row, col] = cellObj;
+                    cell.Initialize();
+                    cell.OnCellClicked += OnCellClicked;
+                    _cells[row, col] = cell;
                 }
             }
+        }
+
+        private void OnCellClicked(CellBehaviour cell)
+        {
+            //todo: check for marked cells  
         }
     }
 }
