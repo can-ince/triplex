@@ -11,7 +11,8 @@ namespace Game.Scripts.Behaviours
         [SerializeField] private SpriteRenderer cellX;
 
         [Header("Interaction Options")] 
-        [SerializeField] private Color clickColor = Color.cyan;
+        [SerializeField] private Color clickBgColor = Color.cyan;
+        [SerializeField] private Color originalBgColor = Color.white;
         [SerializeField] private float animationDuration = 0.1f;
 
         private bool _isInteractable;
@@ -80,13 +81,12 @@ namespace Game.Scripts.Behaviours
 
         IEnumerator AnimateClick()
         {
-            Color originalColor = cellBg.color;
             float timer = 0f;
             var animStepDuration = animationDuration * .5f;
             // Lerp to click color
             while (timer < animStepDuration)
             {
-                cellBg.color = Color.Lerp(originalColor, clickColor, timer / (animationDuration / 2));
+                cellBg.color = Color.Lerp(originalBgColor, clickBgColor, timer / animStepDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
@@ -95,7 +95,7 @@ namespace Game.Scripts.Behaviours
             timer = 0f;
             while (timer < animStepDuration)
             {
-                cellBg.color = Color.Lerp(clickColor, originalColor, timer / (animationDuration / 2));
+                cellBg.color = Color.Lerp(clickBgColor, originalBgColor, timer / animStepDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
