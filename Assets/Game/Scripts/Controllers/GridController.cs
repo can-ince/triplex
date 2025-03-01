@@ -1,9 +1,9 @@
-using System;
+using Game.Scripts.Helpers;
 using UnityEngine;
 
-namespace Game.Scripts
+namespace Game.Scripts.Controllers
 {
-    public class GridController : MonoBehaviour
+    public class GridController : Singleton<GridController>
     {
         [Header("Grid Options")]
         [Tooltip("Grid Size to be generated (n x n)")]
