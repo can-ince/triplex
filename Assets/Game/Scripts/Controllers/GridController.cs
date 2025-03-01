@@ -2,9 +2,9 @@ using System;
 using Game.Scripts.Behaviours;
 using Game.Scripts.Helpers;
 using Game.Scripts.Interfaces;
-using Game.Scripts.UI;
 using Game.Scripts.UI.Views;
 using UnityEngine;
+using Zenject;
 
 namespace Game.Scripts.Controllers
 {
@@ -39,7 +39,6 @@ namespace Game.Scripts.Controllers
         {
             _mainCam = Camera.main;
             CurrentMatchCount = 0;
-            _clusterChecker = new ClusterChecker();
 
             GenerateGrid();
             
@@ -48,11 +47,14 @@ namespace Game.Scripts.Controllers
 
         public void Dispose()
         {
-            // Clear cells
-            ClearCells();
-           
             InGamePanelView.RebuildButtonClicked -= OnRebuildGridRequested;
-
+        }
+        
+        // Injecting ClusterChecker service via DI
+        [Inject]
+        public void Construct(IClusterChecker clusterChecker)
+        {
+            _clusterChecker = clusterChecker;
         }
         
         private void OnRebuildGridRequested(int newGridSize)

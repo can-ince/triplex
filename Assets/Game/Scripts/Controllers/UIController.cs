@@ -16,7 +16,6 @@ namespace Game.Scripts.Controllers
     
         public void Dispose()
         {
-            CloseInGamePanel();
             inGamePanelView.Dispose();
         }
         
