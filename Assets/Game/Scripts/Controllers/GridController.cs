@@ -1,6 +1,9 @@
+using System;
 using Game.Scripts.Behaviours;
 using Game.Scripts.Helpers;
 using Game.Scripts.Interfaces;
+using Game.Scripts.UI;
+using Game.Scripts.UI.Views;
 using UnityEngine;
 
 namespace Game.Scripts.Controllers
@@ -18,34 +21,48 @@ namespace Game.Scripts.Controllers
         private CellBehaviour[,] _cells;
         private Camera _mainCam;
         private IClusterChecker _clusterChecker;
+        private int _currentMatchCount;
 
-        private void Start()
+        public int CurrentMatchCount
         {
-            Initialize();
-        }
+            get => _currentMatchCount;
 
-        private void OnDestroy()
-        {
-            Dispose();
+            set
+            {
+                _currentMatchCount = value;
+                OnMatchCountChanged?.Invoke(_currentMatchCount);
+            }
         }
-
+        public static event Action<int> OnMatchCountChanged;
+        
         public void Initialize()
         {
             _mainCam = Camera.main;
-
+            CurrentMatchCount = 0;
             _clusterChecker = new ClusterChecker();
 
             GenerateGrid();
+            
+            InGamePanelView.RebuildButtonClicked += OnRebuildGridRequested;
         }
 
         public void Dispose()
         {
             // Clear cells
+            ClearCells();
+           
+            InGamePanelView.RebuildButtonClicked -= OnRebuildGridRequested;
 
-            foreach (var cell in _cells)
-            {
-                cell.Dispose();
-            }
+        }
+        
+        private void OnRebuildGridRequested(int newGridSize)
+        {
+            RebuildGrid(newGridSize);
+        }
+
+        private void OnCellClicked(CellBehaviour cell)
+        {
+            HandleCellClicked(cell);
         }
 
         private void GenerateGrid()
@@ -76,11 +93,6 @@ namespace Game.Scripts.Controllers
             }
         }
 
-        private void OnCellClicked(CellBehaviour cell)
-        {
-            HandleCellClicked(cell);
-        }
-
         // Clear all marked cells if cluster size is target amount or more
         private void HandleCellClicked(CellBehaviour clickedCell)
         {
@@ -92,7 +104,30 @@ namespace Game.Scripts.Controllers
                 {
                     cell.ClearCell();
                 }
+
+                CurrentMatchCount++;
             }
         }
+        
+        private void RebuildGrid(int newGridSize)
+        {
+            gridSize = newGridSize;
+
+            CurrentMatchCount = 0;
+            
+            // clear old cells
+            ClearCells();
+            
+            GenerateGrid();
+        }
+        
+        private void ClearCells()
+        {
+            foreach (var cell in _cells)
+            {
+                cell.Dispose();
+            }
+        }
+
     }
 }
